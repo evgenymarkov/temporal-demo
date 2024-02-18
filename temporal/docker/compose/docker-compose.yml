@@ -1,0 +1,91 @@
+version: "3"
+
+services:
+  # PostgreSQL Shard 1
+
+  postgres_shard_1_master:
+    build: ../postgres/master
+    hostname: temporal-postgres-shard-1-master
+    container_name: temporal_postgres_shard_1_master
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_shard_1_master_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: temporal
+      POSTGRES_TEST_DB: test_temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal_pass
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+  postgres_shard_1_replica:
+    build: ../postgres/replica
+    hostname: temporal-postgres-shard-1-replica
+    container_name: temporal_postgres_shard_1_replica
+    depends_on:
+      - postgres_shard_1_master
+    ports:
+      - "5433:5433"
+    volumes:
+      - postgres_shard_1_replica_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PORT: 5433
+      POSTGRES_DB: temporal
+      POSTGRES_TEST_DB: test_temporal
+      REPLICATION_USER: replicator
+      REPLICATION_PASSWORD: replicator_password
+      REPLICATION_SLOT_NAME: replication_slot_replica
+      REPLICATION_MASTER_HOST: postgres_shard_1_master
+      REPLICATION_MASTER_PORT: 5432
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+  # PostgreSQL Shard 2
+
+  postgres_shard_2_master:
+    build: ../postgres/master
+    hostname: temporal-postgres-shard-2-master
+    container_name: temporal_postgres_shard_2_master
+    ports:
+      - "5434:5434"
+    volumes:
+      - postgres_shard_2_master_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PORT: 5434
+      POSTGRES_DB: temporal
+      POSTGRES_TEST_DB: test_temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal_pass
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+  postgres_shard_2_replica:
+    build: ../postgres/replica
+    hostname: temporal-postgres-shard-2-replica
+    container_name: temporal_postgres_shard_2_replica
+    depends_on:
+      - postgres_shard_2_master
+    ports:
+      - "5435:5435"
+    volumes:
+      - postgres_shard_2_replica_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PORT: 5435
+      POSTGRES_DB: temporal
+      POSTGRES_TEST_DB: test_temporal
+      REPLICATION_USER: replicator
+      REPLICATION_PASSWORD: replicator_password
+      REPLICATION_SLOT_NAME: replication_slot_replica
+      REPLICATION_MASTER_HOST: postgres_shard_2_master
+      REPLICATION_MASTER_PORT: 5434
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+volumes:
+  postgres_shard_1_master_data:
+    driver: local
+  postgres_shard_1_replica_data:
+    driver: local
+
+  postgres_shard_2_master_data:
+    driver: local
+  postgres_shard_2_replica_data:
+    driver: local

@@ -1,0 +1,27 @@
+version: "3"
+silent: true
+
+env:
+  COMPOSE_ENV: COMPOSE_PROJECT_NAME=temporal
+
+tasks:
+  build:
+    cmds:
+      - docker compose -f ./compose/docker-compose.yml build
+
+  start:
+    cmds:
+      - docker compose -f ./compose/docker-compose.yml up --detach
+
+  stop:
+    cmds:
+      - docker compose -f ./compose/docker-compose.yml down
+
+  clean:
+    cmds:
+      - docker compose -f ./compose/docker-compose.yml down --volumes
+
+  show-logs:
+    cmds:
+      - docker compose -f ./compose/docker-compose.yml logs --follow
+    ignore_error: true

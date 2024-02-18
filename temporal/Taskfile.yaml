@@ -1,0 +1,7 @@
+version: "3"
+silent: true
+
+includes:
+  docker:
+    dir: ./docker
+    taskfile: ./docker/Taskfile.yaml
